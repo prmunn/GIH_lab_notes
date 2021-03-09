@@ -1,0 +1,109 @@
+ <hr />
+<p>title:   Read parsing pipeline</p>
+<h2 id="created20201021">created: 2020-10-21</h2>
+<ul>
+<li><p>[[Projects]]</p>
+<ul>
+<li>Date:: [[2020-10-05]]</li>
+<li>Due date:: </li>
+<li>Completed date:: </li>
+<li>Outcome:: Reusable modules that can be built into different pipelines</li>
+<li>Success criteria:: </li>
+<li>Waiting for:: </li>
+<li>Status:: #started </li>
+<li>Priority:: #high</li>
+<li>Tags:: #project #programming #gihub #pipeline </li>
+<li>Related projects:: [[ME/CFS]]</li>
+<li>Notes:: </li>
+<li>Next actions:: <ul>
+<li>{{[[DONE]]}} Update notes from [[2021-01-05]] meeting #gihub #pipeline </li>
+<li>{{[[TODO]]}} Make notes on [[Jen Grenier]] pipeline document #gihub #pipeline #high </li>
+<li>{{[[TODO]]}} Run through [[ArchR]] tutorial #gihub #pipeline #high <ul>
+<li>Did they write one for barnyard experiments? - No</li>
+<li>{{[[DONE]]}} Get back to [[Jen Grenier]] on what mapping software do they recommend to produce tables for processing by [[ArchR]]? #gihub #pipeline </li></ul></li>
+<li>{{[[TODO]]}} Look into [[UMI_tools]] - needs whitelist file #gihub #pipeline </li>
+<li>{{[[TODO]]}} Look into passing arguments to [[Shellscript]] using opt #gihub #pipeline </li>
+<li>{{[[TODO]]}} Make notes on [[cutadapt]] #gihub #pipeline #high </li>
+<li>{{[[TODO]]}} Look into [[MultiQC]] #gihub #pipeline </li>
+<li>{{[[TODO]]}} Look into [[STAR]] #gihub #pipeline </li>
+<li>{{[[TODO]]}} Look into [[ZUMI]] - we're not currently using this, but might be in the future #gihub #pipeline </li> *</ul></li></ul></li>
+<li><p>[[2021-03-02]] [[Read parsing pipeline]] meeting with [[Jen Grenier]] and [[Faraz Ahmed]] [[Read parsing pipeline#^O5BAZzijV]]</p>
+<ul>
+<li>[[2021-03-02]] [[Read parsing pipeline]] meeting with [[Jen Grenier]] and [[Faraz Ahmed]] ^O5BAZzijV<ul>
+<li>xxx</li></ul></li></ul></li>
+<li><p>[[2021-01-12]] [[Read parsing pipeline]] meeting with [[Jen Grenier]] and [[Faraz Ahmed]] [[Read parsing pipeline#^zUrBcJN_S]]</p>
+<ul>
+<li>[[2021-01-12]] [[Read parsing pipeline]] meeting with [[Jen Grenier]] and [[Faraz Ahmed]] ^zUrBcJN_S<ul>
+<li>Video of call: C:\Users\prm88\Documents\zoom\2021-01-12 15.18.06 TREx<em>Jen Grenier</em> Office Hours 658238586</li>
+<li>UHT-3' RNA-seq<ul>
+<li><img src="https://firebasestorage.googleapis.com/v0/b/firescript-577a2.appspot.com/o/imgs%2Fapp%2FWorkingmemory%2FDBh8w0rcdq.png?alt=media&token=96c97427-2e83-46a9-98f9-eee9219b75b2" alt="" /></li>
+<li>Architecture of library:</li>
+<li>The arrows show were the primers are that we get off of the sequencer (up to 4)</li>
+<li>Primer followed by the sequence of mRNA</li>
+<li>Read 2 is on the opposite strand going in the other direction, so it's the paired end in the insert read<ul>
+<li>The first thing read 2 generates is a UMI sequence, then an inline bar code, then a poly-T stretch, and then it gets into the insert from the other end</li>
+<li>It also generates an index read that could be at the beginning as a PCR bar code.</li>
+<li>These index reads are used to demultiplex by sample</li>
+<li>So the PCR bar code are bar coding pools of samples</li></ul></li>
+<li>If the run is not demultiplexed you get 4 FASTQ files (read1, read2, Index1, and Index2) - each file contains all clusters on the flowcell</li>
+<li>Critical that we keep the rows in each file in sync with each other</li>
+<li>---</li>
+<li>Step 1: Move UMI to R1/R2 headers as early as possible (when everything is still in sync)<ul>
+<li>The first 8 characters in read 1 and read 2</li>
+<li>Read 2 contains the UMI</li></ul></li>
+<li>Step 1B: Horizontal merge I1 and I2 reads into R2<ul>
+<li>These next steps are about custom demultiplexing, using the bar code information</li>
+<li>There may already be some demultiplexing that happened on the PCR bar codes</li>
+<li>Note: it's called an inline bar code because it's in the insert read, not in the index read</li>
+<li>Used paste command to create longer inline bar codes at he 5' end of R2</li>
+<li>Step 1B is optional for the example [[Jen Grenier]] was talking about, but will be required for combinatorial single-cell.</li>
+<li>At this step, we've collapsed down to two files (14:00)</li>
+<li>At this point we can use [[cutadapt]] to do the demultiplexing (14:50)</li>
+<li>The goal here (for bulk UHT 3' RNA-seq) is to generate a pair of FASTQ files for each sample, with UMI's in the headed to take advantage of the combinatorial bar code (15:20)</li>
+<li>After the paste, read 1 will be longer than read 2 (we moved the UMI out of read 2, so it's down to 142 characters)</li>
+<li>Haven't yet tested whether it's ok to have Read 1 and Read 2 different lengths (22:20)</li>
+<li>Another variable is the length of the index read - the standard is 8, but custom pipelines can change this</li>
+<li>[[cutadapt]] allows you to provide a human readable name to go with each of the bar codes in your whitelist</li>
+<li><img src="https://firebasestorage.googleapis.com/v0/b/firescript-577a2.appspot.com/o/imgs%2Fapp%2FWorkingmemory%2F9lUp_HeAj_.png?alt=media&token=2a7f6dc0-a61a-403a-879d-e4d7a1a1076d" alt="" /></li>
+<li>Possible variables used in script:<ul>
+<li>UMI = 8 nt (removed)</li>
+<li>Output = 142 nt (assumes R2 starts at 150 nt)</li></ul></li>
+<li>[[cutadapt]]<ul>
+<li>Focus on trimming paired-end reads</li>
+<li>Keeping reads in sync</li>
+<li>Demultiplexing</li></ul></li>
+<li>Example read qc in Slack</li></ul></li></ul></li>
+<li>Prefer BWA over STAR for alignment of ATAC-seq libraries (1:15:00)</li>
+<li>SAM tools now more strict some problems working with BWA - ask [[Faraz Ahmed]] about this</li>
+<li>BWA only writes SAM files - by using regroup you can add a lot of stuff to the headerr</li>
+<li>Use -b to produce a BAM file</li> *</ul></li></ul></li>
+<li><p>[[2021-01-05]] [[Read parsing pipeline]] Meeting with [[Jen Grenier]] [[Read parsing pipeline#^qJHEs2K_1]]</p>
+<ul>
+  <li>[[2021-01-05]] [[Read parsing pipeline]] Meeting with [[Jen Grenier]] ^qJHEs2K_1<ul>
+  <li>Location of [[Jen Grenier]] notes:<ul>
+  <li>/workdir/jkg47/GenomicsInnovation/UHT-ATAC/Novogene-G201123J-noDemux/fastqs</li>
+  <li>{{[[TODO]]}} Seurat vignette: https://satijalab.org/seurat/v3.1/de_vignette.html #gihub #pipeline </li></ul></li>
+  <li>Video of call: C:\Users\prm88\Documents\Zoom\2021-01-05 15.06.46 TREx<em>Jen Grenier</em> Office Hours 658238586</li></ul></li></ul></li>
+</ul>
+<p>[[UHT-ATACseq]] being done by [[Adrian McNairn]]</p>
+<ul>
+  <li>Analysis pipeline:<ul>
+  <li>[[sciATACseq]]</li>
+  <li>Combinatorial barcode: i7 barcode + i5 tag + i7 tag</li>
+  <li>100 samples; 96 wells</li>
+  <li>{{[[TODO]]}} Relevant paper: Cusanovich (2015 or 2017) #gihub #pipeline </li>
+  <li>i7 barcode embedded in read2 </li></ul></li>
+</ul>
+<p>Test dataset: GG02/workdir/jkg47/genomicsinnovationhub/raw_data DNA barcodes package - design of barcodes</p>
+<p>{{[[TODO]]}} Look into [[Case]] #gihub #pipeline {{[[TODO]]}} Look into [[Esac]] #gihub #pipeline {{[[TODO]]}} Look into [[Snakemake]] #gihub #pipeline {{[[TODO]]}} Look into [[Nexflow]], [[NextflowWorkbench: Reproducible and Reusable Workflows forBeginners and Experts]] #gihub #pipeline {{[[TODO]]}} Look into [[STARsolo]] - mapping, demultiplexing and quantification for single cell RNA-seq #gihub #pipeline {{[[TODO]]}} Look into [[split pool]] processing #gihub #pipeline {{[[TODO]]}} Look into [[Signac]] #gihub #pipeline {{[[TODO]]}} Look into [[Simpson Index]] #gihub #pipeline </p>
+<ul>
+  <li>Email from [[Jen Grenier]]<ul>
+  <li>I’ve attached two slides on my first attempts at preprocessing fastq files (parsing UMI and BCs) for the two UHT methods being developed in the GIH lab.</li>
+  <li>Note that the steps for [[UHT-3’Seq]] could be reordered to match [[UHT-ATACseq]], and allow for use of the long R2 read into the insert. In the test data, the R2 quality was really low so I didn’t try to use it, I just truncated to use only the UMI+RTBC. But to preserve the PE insert read from R2, it will work better to move the [[UMI seq]] first and then demux on RTBC that becomes 5’anchored in R2 (as for [[UHT-ATACseq]]).</li>
+  <li>We have a test dataset for each method on GG02:</li>
+  <li>/workdir/jkg47/GenomicsInnovation/UHT-3pSeq/Novogene-G200831J/</li>
+  <li>/workdir/jkg47/GenomicsInnovation/UHT-ATAC/Novogene-G200831A-rptdemux/</li>
+  <li>Feel free to copy any files and try to read through my notes on the server!</li>
+  <li>And of course ask any questions that come up.</li>
+  <li>For example, you may want to know what BC combos are expected – I will work on a ‘sample sheet’ that describes what we did in the lab for these test experiments. Slides for [[UHT-ATACseq]] and [[UHT-3’Seq]]: D:\Box Sync\genome<em>innovation</em>hub\read<em>parsing</em>pipeline</li></ul></li>
+</ul>
