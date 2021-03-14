@@ -20,6 +20,11 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
   </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\prm88\Documents\Box\genome_innovation_hub\sandbox\GitHub\GIH_lab_notes\assets" />
+    </key>
+  </component>
   <component name="RunManager">
     <configuration name="networks" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GIH_lab_notes" />
