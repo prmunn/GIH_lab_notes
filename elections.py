@@ -6,7 +6,7 @@ import dash_bootstrap_components as dbc
 import pandas as pd
 import plotly.express as px
 
-df = pd.read_csv('politics.csv')
+df = pd.read_csv('https://raw.githubusercontent.com/prmunn/GIH_lab_notes/main/politics.csv')
 #you can also read your data like this:
 # df = pd.read_csv('/home/charmingdata1/demo-app3/politics.csv')
 
